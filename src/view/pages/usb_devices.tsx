@@ -9,25 +9,34 @@ import { usbSerialAdd } from '../../redux/actions';
 import { FlatList } from 'react-native-gesture-handler';
   
   export const UsbDevicesPage = () => {
-    const device = useSelector((state) => state.devices);
-    const dispatch = useDispatch();
-    const setUsb = (item) => {
-        dispatch(usbSerialAdd(item))
-    };
+    // const device = useSelector((state) => state.devices);
+    // const dispatch = useDispatch();
+    // const setUsb = (item) => {
+    //     dispatch(usbSerialAdd(item))
+    // };
+    const [usbSerial, setUsbSerial] = useState(null)
     useLayoutEffect(() => {
-      initSerialPort();
-    }, []);
+      // initSerialPort()
+    },[])
   
+
     async function initSerialPort() {
       try {
         // check for the available devices
         const devices = await UsbSerialManager.list();
+        // Alert.alert('devices :   ' + devices.length.toString , devices[0].deviceId);
         // Send request for the first available device
         const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
+
         if (granted) {
           // open the port for communication
-          const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
-          setUsb(item)
+          try {
+            const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
+            setUsbSerial(usbSerialport)
+          }
+          catch  (err){
+              Alert.alert('Catch', err)
+          }   
         } else {
           Alert.alert('USB permission denied');
         }
@@ -36,19 +45,67 @@ import { FlatList } from 'react-native-gesture-handler';
       }
     }
   
-    async function sendData(data) {
-      Alert.alert('senddatafunc');
+    function sendData(data) {
+      Alert.alert(usbSerial + '' + 'pre')
       if (usbSerial) {
-        usbSerial
-        .send(data)
-        .then((e)=>{
-          Alert.alert(e + 'then')
-          })
-        .catch((e)=>{
-          Alert.alert(e + ' catch')
-        })
+        Alert.alert(usbSerial + '' + 'afte')
+        usbSerial.send(data).then((e)=>{Alert.alert('suceeesssss')}).catch(()=>{Alert.alert('fuckkkkkkkkkk')})
       }
     }
+
+
+    async function requestUSBPermission() {
+      try {
+        const devices = await UsbSerialManager.list();
+        Alert.alert(
+          devices[0].deviceId.toString() + '------' + devices[1].deviceId.toString())
+        // check for the available devices
+        const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
+        Alert.alert(granted)
+        // Send request for the first available device
+        if (granted) {
+          Alert.alert('USB permission granted');
+          // continue with connecting to the USB device
+        } else {
+          Alert.alert('USB permission denied');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // async function initSerialPort() {
+    //   try {
+    //     // check for the available devices
+    //     const devices = await UsbSerialManager.list();
+    //     // Send request for the first available device
+    //     const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
+    //     if (granted) {
+    //       // open the port for communication
+    //       const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
+    //       setUsb(item)
+    //     } else {
+    //       Alert.alert('USB permission denied');
+    //     }
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
+    // }
+  
+    // async function sendData(xyi) {
+    //   Alert.alert('senddatafunc');
+    //   Alert.alert(device)
+    //   if (device) {
+    //     device
+    //     .send(xyi)
+    //     .then((e)=>{
+    //       Alert.alert(e + 'then')
+    //       })
+    //     .catch((e)=>{
+    //       Alert.alert(e + ' catch')
+    //     })
+    //   }
+    // }
 
 
 const Item = ({name, id, connect}) => (
@@ -65,10 +122,9 @@ const Item = ({name, id, connect}) => (
       </View>
     </TouchableOpacity >
   );
-
-  
     return (
-      <FlatList 
+      <View style={{height: '100%'}}>
+        <FlatList 
       data={[
         {
         name: '01',
@@ -88,6 +144,11 @@ const Item = ({name, id, connect}) => (
     ]}
     renderItem={({item}) => <Item name={item.name} id={item.id} connect={item.connect} />}
     />
+        <View style={{flexDirection: 'row'}}>
+        <TouchableOpacity onPress={()=>{requestUSBPermission();}} style={{height: 50, width:200 , backgroundColor: 'red'}}/>
+        <TouchableOpacity onPress={()=>{initSerialPort();}} style={{height: 50, width:200 , backgroundColor: 'green', marginTop: 20}}/>
+        </View>
+      </View>
     );
   };
   
@@ -100,8 +161,6 @@ const Item = ({name, id, connect}) => (
     item: {
     flexDirection: 'row',
     borderWidth: 1,
-
-    //   backgroundColor: 'green',
       padding: 20,
       marginVertical: 8,
       marginHorizontal: 16,
