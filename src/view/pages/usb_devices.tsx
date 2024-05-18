@@ -15,9 +15,10 @@ import { FlatList } from 'react-native-gesture-handler';
     //     dispatch(usbSerialAdd(item))
     // };
     const [usbSerial, setUsbSerial] = useState(null)
-    useLayoutEffect(() => {
-      // initSerialPort()
-    },[])
+    const [state, setState] = useState(null)
+    // useLayoutEffect(() => {
+    //   // initSerialPort()
+    // },[])
   
 
     async function initSerialPort() {
@@ -35,7 +36,7 @@ import { FlatList } from 'react-native-gesture-handler';
             setUsbSerial(usbSerialport)
           }
           catch  (err){
-              Alert.alert('Catch', err)
+            Alert.alert('Catch', err)
           }   
         } else {
           Alert.alert('USB permission denied');
@@ -45,11 +46,25 @@ import { FlatList } from 'react-native-gesture-handler';
       }
     }
   
-    function sendData(data) {
-      Alert.alert(usbSerial + '' + 'pre')
+    function sendData(data: string) {
       if (usbSerial) {
-        Alert.alert(usbSerial + '' + 'afte')
-        usbSerial.send(data).then((e)=>{Alert.alert('suceeesssss')}).catch(()=>{Alert.alert('fuckkkkkkkkkk')})
+        Alert.alert('sendData1:  ' +usbSerial)
+          usbSerial.send('43525332333245').then((e)=>{
+          setState(e)
+
+          Alert.alert('suceeesssss   ' + e)})
+          .catch((e)=>{Alert.alert('fuckkkkkkkkkk  ' + e)})
+      }
+    }
+
+    function sendData2(data: string) {
+      if (usbSerial) {
+        Alert.alert('sendData1:  ' +usbSerial)
+          usbSerial.send('444d30313030204930303130205a30303130204e303030312045').then((e)=>{
+          setState(e)
+
+          Alert.alert('suceeesssss   ' + e)})
+          .catch((e)=>{Alert.alert('fuckkkkkkkkkk  ' + e)})
       }
     }
 
@@ -57,12 +72,7 @@ import { FlatList } from 'react-native-gesture-handler';
     async function requestUSBPermission() {
       try {
         const devices = await UsbSerialManager.list();
-        Alert.alert(
-          devices[0].deviceId.toString() + '------' + devices[1].deviceId.toString())
-        // check for the available devices
         const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-        Alert.alert(granted)
-        // Send request for the first available device
         if (granted) {
           Alert.alert('USB permission granted');
           // continue with connecting to the USB device
@@ -148,6 +158,8 @@ const Item = ({name, id, connect}) => (
         <TouchableOpacity onPress={()=>{requestUSBPermission();}} style={{height: 50, width:200 , backgroundColor: 'red'}}/>
         <TouchableOpacity onPress={()=>{initSerialPort();}} style={{height: 50, width:200 , backgroundColor: 'green', marginTop: 20}}/>
         </View>
+        <TouchableOpacity onPress={()=>{sendData2('ds');}} style={{height: 50, width:250 , backgroundColor: 'orange', marginTop: 20}}/>
+        
       </View>
     );
   };
