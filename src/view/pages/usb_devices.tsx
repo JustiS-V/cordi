@@ -14,7 +14,6 @@ import { FlatList } from 'react-native-gesture-handler';
     const setUsb = (item) => {
         dispatch(usbSerialAdd(item))
     };
-;
     useLayoutEffect(() => {
       initSerialPort();
     }, []);
@@ -37,24 +36,24 @@ import { FlatList } from 'react-native-gesture-handler';
       }
     }
   
-    // async function sendData(data) {
-    //   if (usbSerial) {
-    //     usbSerial
-    //     .send(data)
-    //     .then((e)=>{
-    //         console.log(e)
-    //         console.log('then')
-    //       })
-    //     .catch((e)=>{
-    //       console.log(e + ' catch')
-    //     })
-    //   }
-    // }
+    async function sendData(data) {
+      Alert.alert('senddatafunc');
+      if (usbSerial) {
+        usbSerial
+        .send(data)
+        .then((e)=>{
+          Alert.alert(e + 'then')
+          })
+        .catch((e)=>{
+          Alert.alert(e + ' catch')
+        })
+      }
+    }
 
 
 const Item = ({name, id, connect}) => (
     <TouchableOpacity onPress={()=>{
-        Alert.alert(device + 'test')
+      sendData('CRS232E');
     }} style={styles.item}>
       <View>
         <Text>{name}</Text>
