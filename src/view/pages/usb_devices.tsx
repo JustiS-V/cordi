@@ -34,8 +34,7 @@ import { FlatList } from 'react-native-gesture-handler';
           try {
             const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
             setUsbSerial(usbSerialport)
-          }
-          catch  (err){
+          } catch  (err){
             Alert.alert('Catch', err)
           }   
         } else {
@@ -57,16 +56,14 @@ import { FlatList } from 'react-native-gesture-handler';
       }
     }
 
-    function sendData2(data: string) {
+    async function sendData2(data: string) {
       if (usbSerial) {
-        Alert.alert('sendData1:  ' +usbSerial)
-          usbSerial.send('444d30313030204930303130205a30303130204e303030312045').then((e)=>{
-          setState(e)
+        // Alert.alert('sendData1:  ' +usbSerial)
+          const its = await usbSerial.send(data)
 
-          Alert.alert('suceeesssss   ' + e)})
-          .catch((e)=>{Alert.alert('fuckkkkkkkkkk  ' + e)})
-      }
-    }
+        setState(its);
+      }}
+
 
 
     async function requestUSBPermission() {
@@ -159,6 +156,7 @@ const Item = ({name, id, connect}) => (
         <TouchableOpacity onPress={()=>{initSerialPort();}} style={{height: 50, width:200 , backgroundColor: 'green', marginTop: 20}}/>
         </View>
         <TouchableOpacity onPress={()=>{sendData2('ds');}} style={{height: 50, width:250 , backgroundColor: 'orange', marginTop: 20}}/>
+        <TouchableOpacity onPress={()=>{Alert.alert(state + '-------jjjjjjj')}} style={{height: 50, width:250 , backgroundColor: 'gray', marginTop: 20}}/>
         
       </View>
     );
