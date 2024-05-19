@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { usbSerialAdd } from '../../redux/actions';
 import { FlatList } from 'react-native-gesture-handler';
   
-  export const UsbDevicesPage = () => {
+  export const UsbDevicesPage2= () => {
     // const device = useSelector((state) => state.devices);
     // const dispatch = useDispatch();
     // const setUsb = (item) => {
@@ -179,3 +179,17 @@ const Item = ({name, id, connect}) => (
       fontSize: 32,
     },
   });
+
+  
+//-----------------------------------------------------------------------------------------------------------------------------
+
+
+  export const UsbDevicesPage= () => {
+  
+
+  return(
+    <></>
+  );
+
+
+  };
