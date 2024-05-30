@@ -11,15 +11,15 @@ import { FlatList } from 'react-native-gesture-handler';
   
   export const UsbDevicesPage= () => {
     const [usbSerial, setUsbSerial] = useState(null)
-    const [state, setState] = useState('')
+
     useLayoutEffect(()=>{
-      initSerialPort();
+      // initSerialPort();
     },[]);
+
     async function initSerialPort() {
       try {
         const devices = await UsbSerialManager.list();
-        // Alert.alert('devices :   ' + devices.length.toString , devices[0].deviceId);
-        // Send request for the first available device
+      
         const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
 
         
@@ -40,7 +40,7 @@ import { FlatList } from 'react-native-gesture-handler';
             const sub = await usbSerialport.onReceived((event) => {
           
               // console.log(event.deviceId, event.data);
-              setState(event.data)
+
               Alert.alert(`${event.deviceId} -  device id`, event.data)
             });
             setUsbSerial(usbSerialport);
@@ -55,121 +55,6 @@ import { FlatList } from 'react-native-gesture-handler';
         console.error(err);
       }
     }
-  
-    // async function customSendData2() {
-    //   try {
-    //     const devices = await UsbSerialManager.list();
-
-
-
-    //     await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-        
-    //     const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
-      
-    //     const sub = usbSerialport.onReceived((event) => {
-    //       console.log(event.deviceId, event.data);
-    //       Alert.alert(`${event.deviceId} -  device id`, event.data)
-    //     });
-    //     // unsubscribe
-    //     // sub.remove();
-      
-    //     await usbSerialport.send('43525332333245');
-        
-    //     usbSerialport.close();
-    //   } catch(err) {
-    //     console.log(err);
-    //     //@ts-ignore
-    //     if (err.code === Codes.DEVICE_NOT_FOND) {
-    //       // ...
-    //     }
-    //   }
-    // }
-
-    async function customSendData() {
-      try {
-        const devices = await UsbSerialManager.list();
-        await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-        const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
-      
-        const sub = usbSerialport.onReceived((event) => {
-          
-          // console.log(event.deviceId, event.data);
-          setState(event.data)
-          Alert.alert(`${event.deviceId} -  device id`, event.data)
-        });
-        // unsubscribe
-     
-      
-        // await usbSerialport.send('444d30313030204930303130205a30303130204e303030312045');
-        // sub.remove();
-        // usbSerialport.close();
-      } catch(err) {
-        console.log(err);
-        //@ts-ignore
-        if (err.code === Codes.DEVICE_NOT_FOND) {
-          // ...
-        }
-      }
-    }
-
-    // function sendData(data: string) {
-
-    //   const sub = usbSerialport.onReceived((event) => {
-    //     console.log(event.deviceId, event.data);
-    //   });
-    //   if (usbSerial) {
-    //     Alert.alert('sendData1:  ' +usbSerial)
-    //       usbSerial.send('43525332333245').then((e)=>{
-    //       setState(e)
-
-    //       Alert.alert('suceeesssss   ' + e)})
-    //       .catch((e)=>{Alert.alert('fuckkkkkkkkkk  ' + e)})
-    //   }
-    // }
-
-    // async function sendData2(data: string) {
-    //   if (usbSerial) {
-    //     // Alert.alert('sendData1:  ' +usbSerial)
-    //       const its = await usbSerial.send(data)
-
-    //     setState(its);
-    //   }}
-
-
-
-    // async function requestUSBPermission() {
-    //   try {
-    //     const devices = await UsbSerialManager.list();
-    //     const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-    //     if (granted) {
-    //       Alert.alert('USB permission granted');
-    //       // continue with connecting to the USB device
-    //     } else {
-    //       Alert.alert('USB permission denied');
-    //     }
-    //   } catch (err) {
-    //     console.error(err);
-    //   }
-    // }
-
-    // async function initSerialPort() {
-    //   try {
-    //     // check for the available devices
-    //     const devices = await UsbSerialManager.list();
-    //     // Send request for the first available device
-    //     const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-    //     if (granted) {
-    //       // open the port for communication
-    //       const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, { baudRate: 9600, parity: Parity.None, dataBits: 8, stopBits: 1 });
-    //       setUsb(item)
-    //     } else {
-    //       Alert.alert('USB permission denied');
-    //     }
-    //   } catch (err) {
-    //     console.error(err);
-    //   }
-    // }
-  
     async function sendData(xyi) {
      usbSerial.send(xyi)
       
@@ -214,18 +99,7 @@ import { FlatList } from 'react-native-gesture-handler';
     ]}
     renderItem={({item}) => <Item name={item.name} id={item.id} connect={item.connect} />}
     />
-        <View style={{flexDirection: 'row'}}>
 
-          {state}
-        {/* <TouchableOpacity onPress={()=>{requestUSBPermission();}} style={{height: 50, width:200 , backgroundColor: 'red'}}/> */}
-        <TouchableOpacity onPress={()=>{initSerialPort();}} style={{height: 50, width:200 , backgroundColor: 'green', marginTop: 20}}/>
-        </View>
-        <TouchableOpacity onPress={()=>{customSendData();}} style={{height: 50, width:250 , backgroundColor: 'orange', marginTop: 20}}/>
-        <TouchableOpacity onPress={()=>{
-          sendData('43525332333245');
-        }} style={{height: 50, width:250 , backgroundColor: 'pink', marginTop: 20}}/>
-        
-        <TouchableOpacity onPress={()=>{sendData('444d30313030204930303130205a30303130204e303030312045');}} style={{height: 50, width:250 , backgroundColor: 'pink', marginTop: 20}}/>
       </View>
     );
   };

@@ -1,31 +1,65 @@
 // reducers.js
-import { ADD_LOG_MESSAGE, CLEAN_LOG, USB_SERIAL_ADD} from './actions';
+import { combineReducers } from 'redux';
+import { ADD_LOG_MESSAGE, CLEAN_LOG, USB_SERIAL_ADD, UPDATE_SETTINGS } from './actions';
 
 const initialState = {
   messages: [],
   devices: [],
+  settings: {
+    baudRate: '9600',
+    parity: 'None',
+    dataBits: '8',
+    stopBits: '1',
+  },
+  usbSerial: null,
 };
 
-const todoReducer = (state = initialState, action) => {
+const messagesReducer = (state = initialState.messages, action) => {
   switch (action.type) {
     case ADD_LOG_MESSAGE:
-      return {
-        ...state,
-        messages: [...state.messages, action.payload],
-      };
+      return [...state, action.payload];
     case CLEAN_LOG:
-      return {
-        ...state,
-        messages: state.messages.filter((todo) => todo.id !== action.payload),
-    };
+      return state.filter((message) => message !== action.payload);
+    default:
+      return state;
+  }
+};
+
+const devicesReducer = (state = initialState.devices, action) => {
+  switch (action.type) {
     case USB_SERIAL_ADD:
+      return [...state, action.payload];
+    default:
+      return state;
+  }
+};
+
+const settingsReducer = (state = initialState.settings, action) => {
+  switch (action.type) {
+    case UPDATE_SETTINGS:
       return {
         ...state,
-        devices: [...state.devices, action.payload],
+        ...action.payload,
       };
     default:
       return state;
   }
 };
 
-export default todoReducer;
+const usbSerialReducer = (state = initialState.usbSerial, action) => {
+  switch (action.type) {
+    case USB_SERIAL_ADD:
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
+const rootReducer = combineReducers({
+  messages: messagesReducer,
+  devices: devicesReducer,
+  settings: settingsReducer,
+  usbSerial: usbSerialReducer,
+});
+
+export default rootReducer;

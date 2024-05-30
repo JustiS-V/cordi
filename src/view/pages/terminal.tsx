@@ -1,29 +1,121 @@
-// Terminal.js
-import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import {
+  Codes,
+  Parity,
+  UsbSerialManager,
+} from 'react-native-usb-serialport-for-android';
+import {
+  ScrollView,
+  Alert,
+  Button,
+  View,
+  Text,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { usbSerialAdd } from '../../redux/actions';
+import { FlatList } from 'react-native-gesture-handler';
+import RNFS from '@dr.pogodin/react-native-fs';
+const hex = require('string-hex');
 
-const TerminalPage = () => {
-    const [messages, setMessages] = useState([
-        { id: '1', text: "Привет!" },
-        { id: '2', text: "Как дела?" },
-        { id: '3', text: "Что нового?" },
-        { id: '4', text: "Будешь на концерте завтра?" },
-      ]);
-      const [newMessage, setNewMessage] = useState('');
-    
-      const sendMessage = () => {
-        if (newMessage.trim() === '') return;
-        const newId = (messages.length + 1).toString();
-        setMessages([{ id: newId, text: newMessage }, ...messages, ]);
-        setNewMessage('');
+export const TerminalPage = () => {
+  const [usbSerial, setUsbSerial] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [hexMessage, setHexMessage] = useState('');
+  const settings = useSelector(state => state.settings);
+  const dispatch = useDispatch();
+
+  const handleSaveToFile = async () => {
+    const path = RNFS.DocumentDirectoryPath + '/messages.txt';
+    const fileContent = messages.join('\n');
+
+    try {
+      await RNFS.writeFile(path, fileContent, 'utf8');
+      console.log('File saved successfully at:', path);
+    } catch (error) {
+      console.error('Failed to save file:', error);
+    }
+  };
+
+  useEffect(() => {
+    setHexMessage(hex(newMessage));
+    console.log(hex(newMessage));
+  }, [newMessage]);
+
+  const sendMessage = () => {
+    if (newMessage.trim() === '') return;
+    const newId = (messages.length + 1).toString();
+    setMessages([{ id: newId, text: newMessage }, ...messages]);
+    setNewMessage('');
+  };
+
+  async function initSerialPort() {
+    try {
+      const devices = await UsbSerialManager.list();
+      const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
+
+      if (granted) {
+        try {
+          const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, {
+            baudRate: parseInt(settings.baudRate),
+            parity: Parity[settings.parity],
+            dataBits: parseInt(settings.dataBits),
+            stopBits: parseInt(settings.stopBits),
+          });
+
+         
+
+          setUsbSerial(usbSerialport);
+        } catch (err) {
+          Alert.alert('Catch', err.toString());
+        }
+      } else {
+        Alert.alert('USB permission denied');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    const handleReceivedData = async (event) => {
+        // Handle received data here
+        Alert.alert(event);
+        // setMessages([event.data])
+    };
+
+    if (usbSerial) {
+      const sub = usbSerial.onReceived(handleReceivedData);
+
+      return () => {
+          // Отписаться от событий или выполнить другие необходимые действия при размонтировании компонента
+          sub.unsubscribe(); // Пример метода для отписки от событий, зависит от реализации usbSerial
       };
-    
+  }
+}, [usbSerial]);
+
+  async function sendData() {
+    usbSerial.send(hexMessage);
+    sendMessage();
+  }
+
   return (
     <View style={styles.container}>
-        <FlatList
+      <View style={styles.header}>
+        <Text style={styles.title}>Terminal</Text>
+        <View style={styles.buttons}>
+          <Button title="Connect" onPress={initSerialPort} />
+          <Button title="Save" onPress={handleSaveToFile} />
+        </View>
+      </View>
+      <FlatList
         data={messages}
         renderItem={({ item }) => (
-          <Text style={styles.message}>{item.text}</Text>
+          <Text style={styles.message}>{item.text.toString()}</Text>
         )}
         keyExtractor={(item) => item.id}
         inverted
@@ -35,7 +127,7 @@ const TerminalPage = () => {
           value={newMessage}
           onChangeText={text => setNewMessage(text)}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+        <TouchableOpacity style={styles.sendButton} onPress={sendData}>
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
@@ -44,43 +136,60 @@ const TerminalPage = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    messagesContainer: {
-      flexGrow: 1,
-      justifyContent: 'flex-end',
-      padding: 20,
-    },
-    message: {
-      backgroundColor: '#e0e0e0',
-      padding: 10,
-      borderRadius: 10,
-      marginBottom: 10,
-    },
-    inputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 20,
-    },
-    inputField: {
-      flex: 1,
-      padding: 10,
-      borderWidth: 1,
-      borderColor: '#ccc',
-      borderRadius: 5,
-    },
-    sendButton: {
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      backgroundColor: '#007bff',
-      borderRadius: 5,
-      marginLeft: 10,
-    },
-    sendButtonText: {
-      color: '#fff',
-    },
-  });
-  
-
-export default TerminalPage;
+  message: {
+    color: 'black',
+    backgroundColor: '#e0e0e0',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  container: {
+    flex: 1,
+    marginTop: StatusBar.currentHeight || 0,
+  },
+  item: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+  },
+  title: {
+    fontSize: 32,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+  },
+  inputField: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  sendButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  sendButtonText: {
+    color: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8f8f8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  buttons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+});

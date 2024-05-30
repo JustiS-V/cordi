@@ -10,6 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@dr.pogodin/react-native-fs": "^2.25.2",
+    "@react-native-picker/picker": "^2.7.6",
     "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
@@ -24,7 +26,8 @@
     "react-native-usb-serialport-for-android": "^0.5.0",
     "react-redux": "^9.1.2",
     "redux": "^5.0.1",
-    "redux-thunk": "^3.1.0"
+    "redux-thunk": "^3.1.0",
+    "string-hex": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
