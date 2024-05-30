@@ -43,13 +43,13 @@ export const TerminalPage = () => {
 
   useEffect(() => {
     setHexMessage(hex(newMessage));
-    console.log(hex(newMessage));
+    // console.log(hex(newMessage));
   }, [newMessage]);
 
   const sendMessage = () => {
     if (newMessage.trim() === '') return;
     const newId = (messages.length + 1).toString();
-    setMessages([{ id: newId, text: newMessage }, ...messages]);
+    setMessages([{ text: newMessage }, ...messages]);
     setNewMessage('');
   };
 
@@ -66,40 +66,34 @@ export const TerminalPage = () => {
             dataBits: parseInt(settings.dataBits),
             stopBits: parseInt(settings.stopBits),
           });
-
-         
-
           setUsbSerial(usbSerialport);
         } catch (err) {
-          Alert.alert('Catch', err.toString());
+          // console.warn('Catch', err);
         }
       } else {
-        Alert.alert('USB permission denied');
+        console.log('USB permission denied');
       }
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     }
   }
 
-  useEffect(() => {
-    const handleReceivedData = async (event) => {
-        // Handle received data here
-        Alert.alert(event);
-        // setMessages([event.data])
-    };
+  const handleReceivedData = async (event) => {
+    setMessages((prevMessages) => [{ text: event.data }, ...prevMessages]);
+  };
 
+  useEffect(() => {
     if (usbSerial) {
       const sub = usbSerial.onReceived(handleReceivedData);
-
+  
       return () => {
-          // Отписаться от событий или выполнить другие необходимые действия при размонтировании компонента
-          sub.unsubscribe(); // Пример метода для отписки от событий, зависит от реализации usbSerial
+        sub.unsubscribe(); // Assuming there is a method to unsubscribe from the event
       };
-  }
-}, [usbSerial]);
+    }
+  }, [usbSerial]);
 
   async function sendData() {
-    usbSerial.send(hexMessage);
+    await usbSerial.send(hexMessage);
     sendMessage();
   }
 
@@ -114,10 +108,9 @@ export const TerminalPage = () => {
       </View>
       <FlatList
         data={messages}
-        renderItem={({ item }) => (
-          <Text style={styles.message}>{item.text.toString()}</Text>
-        )}
-        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <Text style={styles.message}>'sdfsdfsdf</Text>
+        }
+        // keyExtractor={(item) => item.id}
         inverted
       />
       <View style={styles.inputContainer}>

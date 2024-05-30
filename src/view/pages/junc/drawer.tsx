@@ -16,7 +16,7 @@ const MyDrawer = () => {
       headerShown: false
     }}
     initialRouteName="Home">
-        <Drawer.Screen name="Info" component={InfoPage} />
+        
         <Drawer.Screen 
          options={{
           
@@ -32,6 +32,7 @@ const MyDrawer = () => {
         name="Terminal" component={TerminalPage} />
         <Drawer.Screen name="Settings" component={SettingsPage} />
         <Drawer.Screen name="USB_Devices" component={UsbDevicesPage} />
+        <Drawer.Screen name="Info" component={InfoPage} />
     </Drawer.Navigator>
   );
 };

@@ -22,15 +22,12 @@ import { FlatList } from 'react-native-gesture-handler';
       
         const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
 
-        
         // unsubscribe
      
-      
         // await usbSerialport.send('43525332333245');     
         // await usbSerialport.send('444d30313030204930303130205a30303130204e303030312045');
         // await sub.remove();
         // await usbSerialport.close();
-
 
         if (granted) {
           // open the port for communication

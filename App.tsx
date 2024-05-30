@@ -3,7 +3,6 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import todoReducer from './src/redux/reducers';
-import TodoList from './src/view/components/TodoList';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LogPage } from './src/view/pages/junc/log';
