@@ -57,7 +57,7 @@ export const TerminalPage = () => {
     try {
       const devices = await UsbSerialManager.list();
       const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-
+      console.log(usbSerial  + '1')
       if (granted) {
         try {
           const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, {
@@ -66,6 +66,7 @@ export const TerminalPage = () => {
             dataBits: parseInt(settings.dataBits),
             stopBits: parseInt(settings.stopBits),
           });
+          console.log(usbSerialport)
           setUsbSerial(usbSerialport);
         } catch (err) {
           // console.warn('Catch', err);
@@ -78,15 +79,43 @@ export const TerminalPage = () => {
     }
   }
 
-  const handleReceivedData = async (event) => {
-    setMessages((prevMessages) => [{ text: event.data }, ...prevMessages]);
+  function hexToAscii(hexString) {
+
+    console.log(hexString)
+    if (hexString.length % 2 !== 0) {
+        throw new Error("Invalid hex string");
+    }
+
+    let asciiString = '';
+    
+    for (let i = 0; i < hexString.length; i += 2) {
+        let hexPair = hexString.substr(i, 2);
+        let decimalValue = parseInt(hexPair, 16);
+        asciiString += String.fromCharCode(decimalValue);
+    }
+    
+    return asciiString;
+}
+
+  const removeConnection = async () => {
+    console.log(usbSerial  + '2')
+    if (!!usbSerial){
+      await usbSerial.close()
+      await setUsbSerial(null)
+    };
   };
+
+  const handleReceivedData = async (event) => {
+    setMessages((prevMessages) => [{ text: hexToAscii(event.data) }, ...prevMessages]);
+  };
+
 
   useEffect(() => {
     if (usbSerial) {
       const sub = usbSerial.onReceived(handleReceivedData);
   
       return () => {
+        if(!!usbSerial)
         sub.unsubscribe(); // Assuming there is a method to unsubscribe from the event
       };
     }
@@ -102,13 +131,24 @@ export const TerminalPage = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Terminal</Text>
         <View style={styles.buttons}>
-          <Button title="Connect" onPress={initSerialPort} />
+          <Button title="Connect" onPress={()=>{
+            if (!!usbSerial){
+               removeConnection()
+              }
+            else{initSerialPort();}
+
+            }} />
           <Button title="Save" onPress={handleSaveToFile} />
         </View>
       </View>
       <FlatList
         data={messages}
-        renderItem={({ item }) => <Text style={styles.message}>'sdfsdfsdf</Text>
+        renderItem={({ item }) => {
+          console.log(typeof item.text)
+          return (
+            <Text style={styles.message}>{item.text}</Text>
+          )
+        }
         }
         // keyExtractor={(item) => item.id}
         inverted
