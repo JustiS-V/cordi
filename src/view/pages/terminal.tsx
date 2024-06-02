@@ -18,49 +18,100 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { usbSerialAdd } from '../../redux/actions';
 import { FlatList } from 'react-native-gesture-handler';
-import RNFS from '@dr.pogodin/react-native-fs';
+// import RNFS from '@dr.pogodin/react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
+import moment from 'moment';
 const hex = require('string-hex');
+// const RNFS = require('react-native-fs');
 
 export const TerminalPage = () => {
   const [usbSerial, setUsbSerial] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [hexMessage, setHexMessage] = useState('');
+  const [permission, setPermission] = useState(false)
+  const [deviceList, setDeviceList] = useState([]); 
   const settings = useSelector(state => state.settings);
-  const dispatch = useDispatch();
+ 
+  function messArrToString(messagesArr) {
+    return messagesArr.map(obj => `${obj.date.toISOString()} - ${obj.text}`).join('\n');
+  }
 
   const handleSaveToFile = async () => {
+    console.log('qweqeqwe')
     const path = RNFS.DocumentDirectoryPath + '/messages.txt';
+    console.log(path)
     const fileContent = messages.join('\n');
-
-    try {
-      await RNFS.writeFile(path, fileContent, 'utf8');
-      console.log('File saved successfully at:', path);
-    } catch (error) {
-      console.error('Failed to save file:', error);
-    }
+    RNFS.writeFile(path, messArrToString(messages), 'utf8')
+  .then((success) => {
+    console.log('FILE WRITTEN!');
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+    console.log(fileContent)
+    // try {
+    //   await RNFS.writeFile(path, fileContent, 'utf8');
+    //   console.log('File saved successfully at:', path);
+    // } catch (error) {
+    //   console.error('Failed to save file:', error);
+    // }
   };
 
   useEffect(() => {
     setHexMessage(hex(newMessage));
-    // console.log(hex(newMessage));
+
   }, [newMessage]);
 
   const sendMessage = () => {
     if (newMessage.trim() === '') return;
     const newId = (messages.length + 1).toString();
-    setMessages([{ text: newMessage }, ...messages]);
+    setMessages([{ text: newMessage, date: new Date() }, ...messages]);
     setNewMessage('');
   };
 
+  useEffect(()=>{
+    getDeviceList();
+  },[])
+
+
+
+  async function getDeviceList () {
+    await UsbSerialManager.list().then((event)=>{
+      console.log(event)
+      setDeviceList(event)
+    }).catch((e)=>{console.log(e + ' device list')})
+  }
+
+
+
+  async function getPerm() {
+    console.log('qweqweqwe')
+    console.log(deviceList.length )
+    if(deviceList.length >0){ 
+      // getPerm();
+      console.log('devicelnght')
+    
+    await UsbSerialManager.tryRequestPermission(deviceList[0].deviceId).then(
+      (event)=>{
+        setPermission(true);
+        console.log(event + 'requestPerm true')
+      }).catch((err)=>{ console.log(err +  'requestPerm catch')
+
+      getDeviceList();
+      })
+    } else {
+      Alert.alert('Device not found');
+      getDeviceList();
+    }
+  }
+
   async function initSerialPort() {
-    try {
-      const devices = await UsbSerialManager.list();
-      const granted = await UsbSerialManager.tryRequestPermission(devices[0].deviceId);
-      console.log(usbSerial  + '1')
-      if (granted) {
+   
+      if (permission) {
         try {
-          const usbSerialport = await UsbSerialManager.open(devices[0].deviceId, {
+
+          const usbSerialport = await UsbSerialManager.open(deviceList[0].deviceId, {
             baudRate: parseInt(settings.baudRate),
             parity: Parity[settings.parity],
             dataBits: parseInt(settings.dataBits),
@@ -69,14 +120,11 @@ export const TerminalPage = () => {
           console.log(usbSerialport)
           setUsbSerial(usbSerialport);
         } catch (err) {
-          // console.warn('Catch', err);
+          console.log('init serial port error')
         }
       } else {
-        console.log('USB permission denied');
+        getPerm();
       }
-    } catch (err) {
-      // console.error(err);
-    }
   }
 
   function hexToAscii(hexString) {
@@ -93,12 +141,13 @@ export const TerminalPage = () => {
         let decimalValue = parseInt(hexPair, 16);
         asciiString += String.fromCharCode(decimalValue);
     }
-    
+    console.log(asciiString)
+    //add check all string 00000000
+    console.log('asciiString')
     return asciiString;
 }
 
   const removeConnection = async () => {
-    console.log(usbSerial  + '2')
     if (!!usbSerial){
       await usbSerial.close()
       await setUsbSerial(null)
@@ -106,7 +155,7 @@ export const TerminalPage = () => {
   };
 
   const handleReceivedData = async (event) => {
-    setMessages((prevMessages) => [{ text: hexToAscii(event.data) }, ...prevMessages]);
+    setMessages((prevMessages) => [{ text: hexToAscii(event.data), date: new Date() }, ...prevMessages]);
   };
 
 
@@ -114,14 +163,17 @@ export const TerminalPage = () => {
     if (usbSerial) {
       const sub = usbSerial.onReceived(handleReceivedData);
   
-      return () => {
-        if(!!usbSerial)
-        sub.unsubscribe(); // Assuming there is a method to unsubscribe from the event
-      };
+      // return () => {
+      //   if(!!usbSerial)
+      //   sub.unsubscribe(); // Assuming there is a method to unsubscribe from the event
+      // };
     }
   }, [usbSerial]);
 
   async function sendData() {
+
+    if (newMessage == 'CALCULATE') return Alert.alert('Calculate', 'Calculate func');
+    if (newMessage == 'Пердоворотитель_ануса') return Alert.alert('Реклама', 'Якщо ви бажаєте розробити мобільний додаток або просто дати грошей бідному програмісту який розробляв цей чудовий додаток - @justisvalya TG')
     await usbSerial.send(hexMessage);
     sendMessage();
   }
@@ -135,18 +187,21 @@ export const TerminalPage = () => {
             if (!!usbSerial){
                removeConnection()
               }
-            else{initSerialPort();}
-
+            else{
+              initSerialPort();}
             }} />
           <Button title="Save" onPress={handleSaveToFile} />
+          <Button title="Clean" onPress={()=>{setMessages([])}} />
         </View>
       </View>
       <FlatList
         data={messages}
         renderItem={({ item }) => {
-          console.log(typeof item.text)
           return (
-            <Text style={styles.message}>{item.text}</Text>
+            <View style={[styles.message,{flexDirection: 'row'}]}>
+              <Text style={{color:'black'}}>{moment(item.date).format()}</Text>
+              <Text style={{color:'black', paddingLeft: 10,}}>{item.text}</Text>
+            </View>
           )
         }
         }
@@ -170,7 +225,6 @@ export const TerminalPage = () => {
 
 const styles = StyleSheet.create({
   message: {
-    color: 'black',
     backgroundColor: '#e0e0e0',
     padding: 10,
     borderRadius: 10,
