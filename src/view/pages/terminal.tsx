@@ -18,8 +18,10 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { usbSerialAdd } from '../../redux/actions';
 import { FlatList } from 'react-native-gesture-handler';
+import RNFS from 'react-native-fs';
+
 // import RNFS from '@dr.pogodin/react-native-fs';
-import * as RNFS from '@dr.pogodin/react-native-fs';
+
 import moment from 'moment';
 const hex = require('string-hex');
 // const RNFS = require('react-native-fs');
@@ -32,24 +34,24 @@ export const TerminalPage = () => {
   const [permission, setPermission] = useState(false)
   const [deviceList, setDeviceList] = useState([]); 
   const settings = useSelector(state => state.settings);
- 
   function messArrToString(messagesArr) {
     return messagesArr.map(obj => `${obj.date.toISOString()} - ${obj.text}`).join('\n');
   }
 
   const handleSaveToFile = async () => {
     console.log('qweqeqwe')
-    const path = RNFS.DocumentDirectoryPath + '/messages.txt';
+    const path = RNFS.DownloadDirectoryPath + '/messages.txt';
     console.log(path)
     const fileContent = messages.join('\n');
     RNFS.writeFile(path, messArrToString(messages), 'utf8')
   .then((success) => {
-    console.log('FILE WRITTEN!');
+    Alert.alert('FILE WRITTEN!', `Path: ${path}`);
+    
   })
   .catch((err) => {
     console.log(err.message);
   });
-    console.log(fileContent)
+    // console.log(fileContent)
     // try {
     //   await RNFS.writeFile(path, fileContent, 'utf8');
     //   console.log('File saved successfully at:', path);

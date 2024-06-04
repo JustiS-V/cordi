@@ -10,7 +10,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@dr.pogodin/react-native-fs": "^2.25.2",
     "@react-native-picker/picker": "^2.7.6",
     "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native": "^6.1.17",
