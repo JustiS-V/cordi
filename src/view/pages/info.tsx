@@ -9,6 +9,35 @@ import {
   
     return (
       <ScrollView style={styles.container}>
+      <Text style={styles.hightext}>
+        Список команд для роботи з консолю
+      </Text>
+      <Text style={styles.text}>
+        1. <Text style={styles.code}>CRS232E</Text>
+      </Text>
+      <Text style={styles.text}>
+        2. <Text style={styles.code}>D|M----_|I----_|Z----_|N----_|E</Text>
+      </Text>
+      <Text style={styles.text}>
+        3. <Text style={styles.code}>CSTARTE</Text>
+      </Text>
+      <Text style={styles.text}>
+        4. <Text style={styles.code}>CALCULATE</Text>
+      </Text>
+      <Text style={styles.text}>
+        5. <Text style={styles.code}>CSTOP_E</Text>
+      </Text>
+
+      <Text style={styles.hightext}>
+        Системні команди консолі 
+      </Text>
+      <Text style={styles.text}>
+        Команда "CALCULATE" повертає значення світло-суми.
+      </Text>
+      
+
+
+      <Text  style={styles.hightext}>Загальні відомості</Text>
       <Text style={styles.text}>
         Формат параметрів, що передаються, має вигляд:
       </Text>
@@ -50,9 +79,17 @@ import {
   
 const styles = StyleSheet.create({
   container: {
+    paddingVertical: 30,
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 16,
+  },
+  hightext: {
+    color: '#000000',
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   text: {
     color: '#000000',

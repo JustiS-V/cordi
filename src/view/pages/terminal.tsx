@@ -153,6 +153,7 @@ export const TerminalPage = () => {
     if (!!usbSerial){
       await usbSerial.close()
       await setUsbSerial(null)
+      Alert.alert('Connect lost', 'The devise is disconnected')
     };
   };
 
@@ -172,10 +173,15 @@ export const TerminalPage = () => {
     }
   }, [usbSerial]);
 
-  async function sendData() {
+  function calcuvateValue() {
 
+  }
+
+  async function sendData() {
+   
     if (newMessage == 'CALCULATE') return Alert.alert('Calculate', 'Calculate func');
-    if (newMessage == 'Пердоворотитель_ануса') return Alert.alert('Реклама', 'Якщо ви бажаєте розробити мобільний додаток або просто дати грошей бідному програмісту який розробляв цей чудовий додаток - @justisvalya TG')
+    if (newMessage == 'Якась там команда старт') return Alert.alert('Calculate', 'Calculate func');
+    
     await usbSerial.send(hexMessage);
     sendMessage();
   }
@@ -185,7 +191,7 @@ export const TerminalPage = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Terminal</Text>
         <View style={styles.buttons}>
-          <Button title="Connect" onPress={()=>{
+          <Button title={!!!usbSerial ? 'Connect' : 'Disconnect'} onPress={()=>{
             if (!!usbSerial){
                removeConnection()
               }
@@ -213,7 +219,7 @@ export const TerminalPage = () => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.inputField}
-          placeholder="Введите ваше сообщение..."
+          placeholder="Введіть команду..."
           value={newMessage}
           onChangeText={text => setNewMessage(text)}
         />
