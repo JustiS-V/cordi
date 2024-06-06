@@ -33,16 +33,16 @@ export const TerminalPage = () => {
   const [hexMessage, setHexMessage] = useState('');
   const [permission, setPermission] = useState(false)
   const [deviceList, setDeviceList] = useState([]); 
+  const [intermediateMessage, setIntermediateMessage] = useState('');
+  const timerRef = useRef(null);
   const settings = useSelector(state => state.settings);
   function messArrToString(messagesArr) {
     return messagesArr.map(obj => `${obj.date.toISOString()} - ${obj.text}`).join('\n');
   }
 
   const handleSaveToFile = async () => {
-    console.log('qweqeqwe')
-    const path = RNFS.DownloadDirectoryPath + '/messages.txt';
-    console.log(path)
-    const fileContent = messages.join('\n');
+    const path = RNFS.DownloadDirectoryPath + `/${Math.floor(Date.now() / 1000).toString()}.txt`;
+
     RNFS.writeFile(path, messArrToString(messages), 'utf8')
   .then((success) => {
     Alert.alert('FILE WRITTEN!', `Path: ${path}`);
@@ -157,9 +157,12 @@ export const TerminalPage = () => {
     };
   };
 
-  const handleReceivedData = async (event) => {
-    setMessages((prevMessages) => [{ text: hexToAscii(event.data), date: new Date() }, ...prevMessages]);
-  };
+  
+
+
+  function calcuvateValue() {
+
+  }
 
 
   useEffect(() => {
@@ -173,14 +176,34 @@ export const TerminalPage = () => {
     }
   }, [usbSerial]);
 
-  function calcuvateValue() {
+  // const handleReceivedData = async (event) => {
+  //   setMessages((prevMessages) => [{ text: hexToAscii(event.data), date: new Date() }, ...prevMessages]);
+  // };
 
-  }
+  const handleReceivedData = (event) => {
+    const receivedData = hexToAscii(event.data);
+    setIntermediateMessage((prev) => {
+      const newMessage = prev ? `${prev} ${receivedData}` : receivedData;
+
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      timerRef.current = setTimeout(() => {
+        setMessages((prevMessages) => [{ text: newMessage, date: new Date() }, ...prevMessages]);
+        setIntermediateMessage('');
+        timerRef.current = null; 
+      }, 3000);
+
+      return newMessage;
+    });
+  };
+
 
   async function sendData() {
-   
+    // setTimer 3sec
     if (newMessage == 'CALCULATE') return Alert.alert('Calculate', 'Calculate func');
-    if (newMessage == 'Якась там команда старт') return Alert.alert('Calculate', 'Calculate func');
+    // if (newMessage == 'Якась там команда старт') return Alert.alert('Calculate', 'Calculate func');
     
     await usbSerial.send(hexMessage);
     sendMessage();
